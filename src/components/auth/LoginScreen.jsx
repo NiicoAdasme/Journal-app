@@ -1,14 +1,23 @@
-import React from 'react'
-import { useDispatch } from 'react-redux'
-import { Link } from 'react-router-dom'
-import { startFacebookLogin, startGithubLogin, startGoogleLogin, startLoginEmailPassword } from '../../actions/auth'
-import { useForm } from '../hooks/useForm/useForm'
+import React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 import { 
-    FacebookLoginButton,
-    GoogleLoginButton,
-    GithubLoginButton
+    startFacebookLogin, 
+    startGithubLogin, 
+    startGoogleLogin, 
+    startLoginEmailPassword 
+} from '../../actions/auth';
+import { useForm } from '../hooks/useForm/useForm';
+// import { 
+//     FacebookLoginButton,
+//     GoogleLoginButton,
+//     GithubLoginButton
 
-} from "react-social-login-buttons";
+// } from "react-social-login-buttons";
+import GithubButton from 'react-github-login-button';
+import validator from 'validator';
+import { removeError } from '../../actions/ui';
+import Swal from 'sweetalert2';
 
 export const LoginScreen = () => {
 
@@ -19,14 +28,45 @@ export const LoginScreen = () => {
         password: ''
     });
 
-
     const { email, password } = formValues;
+
+    const {loading} = useSelector(state => state.ui);
 
     const handleLogin = (e) => {
         e.preventDefault();
 
-        dispatch(startLoginEmailPassword(email, password));
+
+        if( isFormValid() ){
+            dispatch( startLoginEmailPassword(email, password));
+        }
     }
+
+    const isFormValid = () => {
+
+        if( !validator.isEmail( email ) ){
+            // dispatch( setError('Email is not valid') );
+            Swal.fire({
+                title: 'Error!',
+                text: 'Email is not valid',
+                icon: 'error',
+                confirmButtonText: 'Ok'
+            });
+            return false;
+        }else if( password.length <5 ){
+            // dispatch( setError('Password is not valid') );
+            Swal.fire({
+                title: 'Error!',
+                text: 'Password is not valid',
+                icon: 'error',
+                confirmButtonText: 'Ok'
+            });
+            return false;
+        }
+
+        dispatch( removeError() );
+        return true;
+
+    };
 
     const handleGoogleLogin = () => {
         dispatch( startGoogleLogin() );
@@ -40,11 +80,24 @@ export const LoginScreen = () => {
         dispatch( startGithubLogin() );
     }
 
+
     return (
         <>
             <h3 className="auth__title mb-5">Login</h3>
 
-            <form onSubmit={handleLogin}>
+            <form 
+                onSubmit={handleLogin} 
+                className="animate__animated animate__fadeIn"
+            >
+
+                {
+                    // (msgError) &&
+                    // <div className="auth__alert-error">
+                    //     <span> {msgError}</span>
+                    // </div>
+                    
+                }
+
                 <input
                     type="email"
                     name="email"
@@ -66,6 +119,7 @@ export const LoginScreen = () => {
                 <button
                     type="submit"
                     className="btn btn-primary btn-block"
+                    disabled={loading}
                 >
                     Login
                 </button>
@@ -75,7 +129,7 @@ export const LoginScreen = () => {
                 <div className="auth__social-newtworks">
                     <p>Login Social Networks</p>
 
-                    {/* <div
+                    <div
                         className="google-btn mb-5 mt-1"
                         onClick={handleGoogleLogin}
                     >
@@ -85,25 +139,30 @@ export const LoginScreen = () => {
                         <p className="btn-text">
                             <b>Sign in with google</b>
                         </p>
-                    </div> */}
+                    </div>
 
                     {/* <button className="loginBtn loginBtn--google">
                         Login with Google
                     </button> */}
 
-                    <GoogleLoginButton onClick={handleGoogleLogin} size="30px" />
+                    {/* <GoogleLoginButton onClick={handleGoogleLogin}  size="30px" />
 
                     <FacebookLoginButton onClick={handleFacebookLogin} size="30px" />
 
-                    <GithubLoginButton onClick={handleGithubLogin} size="30px" />
+                    <GithubLoginButton onClick={handleGithubLogin} size="30px" /> */}
 
-                    {/* <button 
+                    <button 
                         type="button"
-                        className="loginBtn loginBtn--facebook"
+                        className="loginBtn loginBtn--facebook mb-5"
                         onClick={handleFacebookLogin}
                     >
                         Sign in with Facebook
-                    </button> */}
+                    </button>
+
+                    <GithubButton
+                        onClick={handleGithubLogin}
+                    />
+                    
 
                 </div>
 
